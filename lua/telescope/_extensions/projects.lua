@@ -4,21 +4,20 @@ local pickers = require "telescope.pickers"
 local finders = require "telescope.finders"
 local conf = require("telescope.config").values
 
-local projects_finder = {}
-if vim.fn.executable("fd") > 0 then
-  projects_finder = { "fd", "--unrestricted", "^\\.git$", "${HOME}", "--type", "d", "--prune", "--exec", "printf",
-    '%s\\n', "{//}" }
-elseif vim.fn.executable("gfind") > 0 then
-  projects_finder = { "gfind", "${HOME}", "-name", ".git", "-type", "d", "-prune", "-printf", "%h\\n" }
-else
-  projects_finder = { "find", "${HOME}", "-type", "d", "-name", ".git", "-execdir", "test", "-d", ".git", "\\;",
-    "-print", "-prune", "|", "xargs", "-I{}", "dirname", "{}", }
-end
-
 local projects = function(opts)
   opts = opts or {}
+  local projects_finder = {}
+  if vim.fn.executable("fd") > 0 then
+    projects_finder = { "fd", "--unrestricted", "^\\.git$", "${HOME}", "--type", "d", "--prune", "--exec", "printf",
+      '%s\\n', "{//}" }
+  elseif vim.fn.executable("gfind") > 0 then
+    projects_finder = { "gfind", "${HOME}", "-name", ".git", "-type", "d", "-prune", "-printf", "%h\\n" }
+  else
+    projects_finder = { "find", "${HOME}", "-type", "d", "-name", ".git", "-execdir", "test", "-d", ".git", "\\;",
+      "-print", "-prune", "|", "xargs", "-I{}", "dirname", "{}", }
+  end
   pickers.new(opts, {
-    prompt_title = "colors",
+    prompt_title = "Projects",
     finder = finders.new_oneshot_job(projects_finder, opts),
     sorter = conf.generic_sorter(opts),
     attach_mappings = function(prompt_bufnr, map)
